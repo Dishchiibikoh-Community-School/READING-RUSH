@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>READING RUSH — The Ultimate Literacy Race</title>
+  <meta name="description" content="READING RUSH: A fast-paced, competitive literacy racing game for classrooms. Race through reading, vocabulary, grammar, and writing challenges!">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="landing-container" id="landing">
+
+    <!-- Animated cars at bottom -->
+    <div class="car-track-landing">
+      <span class="car-landing">🏎️</span>
+      <span class="car-landing">🚗</span>
+      <span class="car-landing">🚙</span>
+    </div>
+
+    <!-- Title -->
+    <h1 class="game-title">🏁 READING RUSH</h1>
+    <p class="game-subtitle">The Ultimate Literacy Race</p>
+
+    <!-- Mode Buttons -->
+    <div class="mode-buttons">
+      <a href="viewboard.html" class="mode-btn mode-btn--viewboard" id="btn-viewboard">
+        <span class="mode-btn__icon">🖥️</span>
+        <span class="mode-btn__label">ViewBoard Mode</span>
+        <span class="mode-btn__desc">Whole-class · Teacher-controlled<br>Teams buzz in and race!</span>
+      </a>
+      <a href="chromebook.html" class="mode-btn mode-btn--chromebook" id="btn-chromebook">
+        <span class="mode-btn__icon">💻</span>
+        <span class="mode-btn__label">Chromebook Mode</span>
+        <span class="mode-btn__desc">Individual or Team play<br>Race on your own device!</span>
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div style="margin-top:2.5rem; text-align:center; position:relative; z-index:1;">
+      <p style="color:var(--text-secondary); font-size:0.9rem;">
+        📖 <span id="q-count"></span> Questions · 4 Literacy Domains · 4 Championship Levels
+      </p>
+    </div>
+  </div>
+
+  <script src="js/questions.js"></script>
+  <script>
+    document.getElementById('q-count').textContent = QuestionBank.totalCount;
+  </script>
+</body>
+</html>

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>READING RUSH — Chromebook Mode</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .cb-container {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cb-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid #2a2a5a;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .cb-header__left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .cb-header__right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .cb-player-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cb-player-car {
+            font-size: 1.5rem;
+            display: inline-block;
+            transform: scaleX(-1);
+        }
+
+        .cb-player-name {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+        }
+
+        /* Progress track mini */
+        .mini-track {
+            width: 100%;
+            height: 40px;
+            background: var(--track-bg);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+            border: 1px solid #2a2a5a;
+        }
+
+        .mini-track__markers {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(90deg, transparent 0, transparent 9.9%, rgba(255, 255, 255, 0.06) 10%, rgba(255, 255, 255, 0.06) 10.2%);
+            pointer-events: none;
+        }
+
+        .mini-track__finish {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 20px;
+            background: repeating-linear-gradient(45deg, #000 0, #000 4px, #fff 4px, #fff 8px);
+            opacity: 0.2;
+        }
+
+        .mini-track__car {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%) scaleX(-1);
+            font-size: 1.6rem;
+            transition: left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0 0 8px var(--neon-green));
+        }
+
+        .mini-track__pct {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: var(--font-score);
+            font-size: 0.7rem;
+            color: var(--neon-gold);
+        }
+
+        /* Score display */
+        .score-display {
+            text-align: center;
+            font-family: var(--font-score);
+        }
+
+        .score-display__value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--neon-gold);
+        }
+
+        .score-display__label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Streak */
+        .streak-display {
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .streak-display__flames {
+            font-size: 1.2rem;
+        }
+
+        .streak-display__count {
+            font-family: var(--font-score);
+            font-size: 0.85rem;
+            font-weight: 900;
+        }
+
+        /* Login */
+        .login-container {
+            max-width: 500px;
+            margin: auto;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .car-picker {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .car-option {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #3a3a6a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            background: var(--bg-card);
+            transform: scaleX(-1);
+        }
+
+        .car-option:hover {
+            border-color: var(--neon-blue);
+            transform: scale(1.1);
+        }
+
+        .car-option.selected {
+            border-color: var(--neon-green);
+            box-shadow: var(--shadow-neon-green);
+            background: rgba(57, 255, 20, 0.1);
+        }
+
+        /* Badge wall */
+        .badge-wall {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        /* Power-up bar */
+        .cb-powerup-bar {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            padding: 0.5rem;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid #2a2a5a;
+        }
+
+        .cb-powerup {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #3a3a6a;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+
+        .cb-powerup:hover:not(.used) {
+            border-color: var(--neon-gold);
+            transform: scale(1.1);
+        }
+
+        .cb-powerup.available {
+            border-color: var(--neon-green);
+            animation: powerupReady 2s ease-in-out infinite;
+        }
+
+        .cb-powerup.used {
+            opacity: 0.25;
+            cursor: default;
+        }
+
+        .cb-powerup__tip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            background: var(--bg-card);
+            border: 1px solid #3a3a6a;
+            border-radius: 8px;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .cb-powerup:hover .cb-powerup__tip {
+            opacity: 1;
+        }
+
+        /* End screen */
+        .end-container {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .xp-earned {
+            font-family: var(--font-score);
+            font-size: 2rem;
+            color: var(--neon-gold);
+            margin: 1rem 0;
+        }
+
+        /* Level picker cards */
+        .level-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .level-card {
+            padding: 1.5rem;
+            border: 2px solid #3a3a6a;
+            border-radius: var(--radius-lg);
+            background: var(--bg-card);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: center;
+        }
+
+        .level-card:hover {
+            border-color: var(--neon-blue);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-neon-blue);
+        }
+
+        .level-card.selected {
+            border-color: var(--neon-green);
+            box-shadow: var(--shadow-neon-green);
+        }
+
+        .level-card__stars {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .level-card__name {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+        }
+
+        .level-card__desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .countdown-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            font-family: var(--font-score);
+            font-size: 8rem;
+            font-weight: 900;
+            color: var(--neon-green);
+            text-shadow: 0 0 60px var(--neon-green);
+        }
+
+        .countdown-overlay span {
+            animation: countdownNum 0.6s ease;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== LOGIN ===== -->
+    <div id="login-screen" class="login-container">
+        <h1 class="game-title" style="font-size:2.5rem; margin-bottom:0.3rem;">🏁 READING RUSH</h1>
+        <p style="color:var(--text-secondary); margin-bottom:1.5rem;">Chromebook Mode — Enter the Race!</p>
+
+        <!-- HOW TO PLAY INSTRUCTIONS -->
+        <div id="instructions-panel"
+            style="background:var(--bg-card); border:2px solid #2a2a5a; border-radius:var(--radius-lg); padding:1.25rem; margin-bottom:1.5rem; text-align:left; position:relative; overflow:hidden;">
+            <div
+                style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--neon-green), var(--neon-blue), var(--neon-pink));">
+            </div>
+            <h2
+                style="font-family:var(--font-display); font-size:1rem; color:var(--neon-green); margin-bottom:0.75rem; text-align:center;">
+                📋 HOW TO PLAY</h2>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+                <div
+                    style="background:rgba(57,255,20,0.05); border:1px solid rgba(57,255,20,0.2); border-radius:10px; padding:0.75rem;">
+                    <h3 style="color:var(--neon-green); font-size:0.8rem; margin-bottom:0.4rem;">🏁 THE RACE</h3>
+                    <ul style="list-style:none; font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+                        <li>1️⃣ Enter your name & pick a car</li>
+                        <li>2️⃣ Read each question carefully</li>
+                        <li>3️⃣ Tap the correct answer before time runs out!</li>
+                        <li>4️⃣ Your car moves forward for each correct answer</li>
+                        <li>5️⃣ Race through 3 rounds to the finish line!</li>
+                    </ul>
+                </div>
+                <div
+                    style="background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.2); border-radius:10px; padding:0.75rem;">
+                    <h3 style="color:var(--neon-blue); font-size:0.8rem; margin-bottom:0.4rem;">⚡ SCORING & STREAKS</h3>
+                    <ul style="list-style:none; font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+                        <li>✅ Correct = <strong style="color:var(--neon-gold);">100 pts</strong></li>
+                        <li>⚡ Fast (&lt;5s) = <strong style="color:var(--neon-gold);">+50 bonus</strong></li>
+                        <li>🔥 3 streak = <strong style="color:var(--neon-orange);">TURBO ×1.5</strong></li>
+                        <li>🔥🔥 5 streak = <strong style="color:var(--neon-pink);">NITRO ×2.0!</strong></li>
+                        <li>❌ Wrong = streak resets</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                <div
+                    style="background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:10px; padding:0.75rem;">
+                    <h3 style="color:var(--neon-gold); font-size:0.8rem; margin-bottom:0.4rem;">🎁 POWER-UPS</h3>
+                    <ul style="list-style:none; font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+                        <li>🚀 <strong>Turbo</strong> — 2× points</li>
+                        <li>🛡️ <strong>Shield</strong> — block a miss</li>
+                        <li>💣 <strong>50/50</strong> — remove 2 wrong answers</li>
+                        <li style="color:var(--neon-green); font-size:0.75rem;">Earn more every 4 correct!</li>
+                    </ul>
+                </div>
+                <div
+                    style="background:rgba(177,78,255,0.05); border:1px solid rgba(177,78,255,0.2); border-radius:10px; padding:0.75rem;">
+                    <h3 style="color:var(--neon-purple); font-size:0.8rem; margin-bottom:0.4rem;">🏅 BADGES</h3>
+                    <ul style="list-style:none; font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+                        <li>🔥 <strong>Turbo Mode</strong> — 3 streak</li>
+                        <li>⚡ <strong>Speed Demon</strong> — answer in &lt;3s</li>
+                        <li>🌟 <strong>Perfect Round</strong> — no mistakes</li>
+                        <li>👑 <strong>Champion</strong> — finish the race!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- END INSTRUCTIONS -->
+
+        <div class="form-group">
+            <label class="form-label">Your Racer Name</label>
+            <input class="form-input" id="player-name" placeholder="Enter your name" maxlength="20"
+                style="text-align:center; font-size:1.2rem;">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Pick Your Race Car</label>
+            <div class="car-picker" id="car-picker"></div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Choose Your Level</label>
+            <div class="level-cards" id="level-picker">
+                <div class="level-card selected" data-level="1" onclick="pickLevel(this)">
+                    <div class="level-card__stars">⭐</div>
+                    <div class="level-card__name">Pit Stop</div>
+                    <div class="level-card__desc">Grade 3-4</div>
+                </div>
+                <div class="level-card" data-level="2" onclick="pickLevel(this)">
+                    <div class="level-card__stars">⭐⭐</div>
+                    <div class="level-card__name">Street Race</div>
+                    <div class="level-card__desc">Grade 5-6</div>
+                </div>
+                <div class="level-card" data-level="3" onclick="pickLevel(this)">
+                    <div class="level-card__stars">⭐⭐⭐</div>
+                    <div class="level-card__name">Grand Prix</div>
+                    <div class="level-card__desc">Grade 7-8</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary btn-lg" style="width:100%; margin-top:1rem;" onclick="startChromebookGame()">🏁
+            START RACING!</button>
+        <a href="index.html" class="btn btn-secondary" style="margin-top:1rem;">← Back to Menu</a>
+    </div>
+
+    <!-- ===== GAME ===== -->
+    <div id="game-screen" class="cb-container" style="display:none;">
+
+        <!-- Header -->
+        <div class="cb-header">
+            <div class="cb-header__left">
+                <div class="cb-player-info">
+                    <span class="cb-player-car" id="hdr-car"></span>
+                    <span class="cb-player-name" id="hdr-name"></span>
+                </div>
+                <span class="round-indicator" id="cb-round-badge" style="font-size:0.75rem;">Round 1</span>
+                <span id="race-position"
+                    style="font-family:var(--font-score); font-size:1rem; font-weight:900; color:var(--neon-green); margin-left:0.5rem;">1st</span>
+            </div>
+            <div class="cb-header__right">
+                <div class="streak-display" id="streak-display">
+                    <div class="streak-display__flames" id="streak-flames"></div>
+                    <div class="streak-display__count" id="streak-count">0</div>
+                </div>
+                <div class="timer-container" id="timer-container" style="width:60px; height:60px;">
+                    <div class="timer-ring" id="timer-ring" style="width:60px; height:60px;">
+                        <svg viewBox="0 0 60 60" style="width:60px; height:60px;">
+                            <circle cx="30" cy="30" r="26" stroke-dasharray="163" stroke-dashoffset="0"
+                                id="timer-circle" fill="none" stroke-width="4" stroke-linecap="round"
+                                stroke="var(--neon-green)"
+                                style="transition:stroke-dashoffset 1s linear, stroke 0.3s;" />
+                        </svg>
+                        <span class="timer-text" id="timer-text" style="font-size:1rem;">15</span>
+                    </div>
+                </div>
+                <div class="score-display">
+                    <div class="score-display__value" id="score-value">0</div>
+                    <div class="score-display__label">points</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multi-lane Race Track (built dynamically by JS) -->
+        <div class="mini-track" id="mini-track" style="height:auto; padding:6px 8px;">
+            <!-- Lanes are dynamically generated -->
+        </div>
+
+        <!-- Game Content: Question + Leaderboard -->
+        <div style="display:grid; grid-template-columns:1fr 180px; gap:0.75rem; flex:1; min-height:0;">
+
+            <!-- Question Area -->
+            <div class="question-card" id="question-card">
+                <div style="font-family:var(--font-score); font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;"
+                    id="cb-q-num">Q 1/10</div>
+                <span class="question-domain-badge" id="q-domain-badge"></span>
+                <div class="question-passage hidden" id="q-passage"></div>
+                <div class="question-text" id="q-text"></div>
+                <div class="answer-grid" id="answer-grid"></div>
+            </div>
+
+            <!-- Live Leaderboard Sidebar -->
+            <div
+                style="background:var(--bg-card); border:1px solid #2a2a5a; border-radius:var(--radius); padding:0.75rem; overflow-y:auto;">
+                <div
+                    style="font-family:var(--font-display); font-size:0.7rem; color:var(--neon-gold); text-transform:uppercase; letter-spacing:1px; text-align:center; margin-bottom:0.5rem;">
+                    🏆 Race Standings</div>
+                <div id="race-leaderboard"></div>
+            </div>
+
+        </div>
+
+        <!-- Power-up Bar -->
+        <div class="cb-powerup-bar" id="powerup-bar"></div>
+    </div>
+
+    <!-- ===== ROUND END ===== -->
+    <div id="round-end-screen" style="display:none;" class="overlay">
+        <div class="modal" style="text-align:center; max-width:550px;">
+            <h2 id="round-end-title">🏁 Round Complete!</h2>
+            <div class="score-display" style="margin:1rem 0;">
+                <div class="score-display__value" id="round-score" style="font-size:2.5rem;">0</div>
+                <div class="score-display__label">Your Points</div>
+            </div>
+            <h3 style="color:var(--neon-blue); font-size:0.9rem; margin-bottom:0.5rem;">Race Standings</h3>
+            <div id="round-standings" style="margin-bottom:1rem;"></div>
+            <div id="round-badges" class="badge-wall"></div>
+            <button class="btn btn-primary btn-lg" id="btn-next-round" onclick="nextRound()"
+                style="margin-top:1.5rem;">🏁 Next Round!</button>
+        </div>
+    </div>
+
+    <!-- ===== GAME OVER ===== -->
+    <div id="game-over-screen" style="display:none;" class="overlay">
+        <div class="modal end-container" style="max-width:600px;">
+            <h1 style="font-size:2.2rem;">🏆 RACE COMPLETE! 🏆</h1>
+            <div id="final-place"
+                style="font-family:var(--font-score); font-size:2rem; font-weight:900; color:var(--neon-gold); margin:0.5rem 0;">
+            </div>
+            <div class="xp-earned" id="final-score">0</div>
+            <p style="color:var(--text-secondary);">Your Total Points</p>
+
+            <h3 style="margin:1.5rem 0 0.5rem; color:var(--neon-blue);">🏁 Final Standings</h3>
+            <div id="final-leaderboard" style="margin-bottom:1rem;"></div>
+
+            <h3 style="margin:1rem 0 0.75rem; color:var(--neon-gold);">🏅 Badges Earned</h3>
+            <div class="badge-wall" id="final-badges"></div>
+
+            <h3 style="margin:1.5rem 0 0.75rem; color:var(--neon-blue);">📊 Stats</h3>
+            <div id="final-stats" style="color:var(--text-secondary);"></div>
+
+            <div style="display:flex; gap:1rem; justify-content:center; margin-top:2rem; flex-wrap:wrap;">
+                <button class="btn btn-primary btn-lg" onclick="location.reload()">🔄 Race Again</button>
+                <a href="index.html" class="btn btn-secondary btn-lg">🏠 Home</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== COUNTDOWN ===== -->
+    <div id="countdown-overlay" class="countdown-overlay" style="display:none;">
+        <span id="countdown-number">3</span>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toast-container" style="position:fixed; top:1rem; right:1rem; z-index:9000;"></div>
+
+    <script src="js/questions.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/sounds.js"></script>
+    <script src="js/confetti.js"></script>
+    <script src="js/chromebook.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>READING RUSH — ViewBoard Mode</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ViewBoard-specific overrides */
+        .vb-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border-bottom: 2px solid #2a2a5a;
+        }
+
+        .vb-header__title {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .vb-header__info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .vb-main {
+            display: grid;
+            grid-template-columns: 1fr 260px;
+            gap: 0.75rem;
+            flex: 1;
+            padding: 0.75rem;
+            min-height: 0;
+        }
+
+        .vb-center {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            min-height: 0;
+        }
+
+        .vb-bottom {
+            padding: 0.5rem 0.75rem;
+        }
+
+        .countdown-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            font-family: var(--font-score);
+            font-size: 8rem;
+            font-weight: 900;
+            color: var(--neon-green);
+            text-shadow: 0 0 60px var(--neon-green);
+        }
+
+        .countdown-overlay span {
+            animation: countdownNum 0.6s ease;
+        }
+
+        .question-number-indicator {
+            font-family: var(--font-score);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .round-indicator {
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: rgba(255, 215, 0, 0.15);
+            color: var(--neon-gold);
+            border: 1px solid var(--neon-gold);
+        }
+
+        @media (max-width: 900px) {
+            .vb-main {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== SETUP SCREEN ===== -->
+    <div id="setup-screen">
+        <div class="setup-container">
+            <h1 class="setup-title game-title" style="font-size:2.5rem;">🏁 READING RUSH</h1>
+            <p class="text-center mb-2" style="color:var(--text-secondary);">ViewBoard Mode — Teacher Setup</p>
+
+            <!-- HOW TO PLAY INSTRUCTIONS -->
+            <div id="instructions-panel"
+                style="background:var(--bg-card); border:2px solid #2a2a5a; border-radius:var(--radius-lg); padding:1.5rem; margin-bottom:2rem; position:relative; overflow:hidden;">
+                <div
+                    style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--neon-green), var(--neon-blue), var(--neon-pink));">
+                </div>
+                <h2
+                    style="font-family:var(--font-display); font-size:1.2rem; color:var(--neon-green); margin-bottom:1rem; text-align:center;">
+                    📋 HOW TO PLAY — ViewBoard Mode</h2>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                    <div
+                        style="background:rgba(57,255,20,0.05); border:1px solid rgba(57,255,20,0.2); border-radius:12px; padding:1rem;">
+                        <h3 style="color:var(--neon-green); font-size:0.85rem; margin-bottom:0.5rem;">🏁 THE RACE</h3>
+                        <ul style="list-style:none; font-size:0.85rem; color:var(--text-secondary); line-height:1.8;">
+                            <li>1️⃣ Split class into 2–6 teams</li>
+                            <li>2️⃣ A literacy question appears on screen</li>
+                            <li>3️⃣ Teams <strong style="color:var(--neon-blue);">buzz in</strong> by tapping their team
+                                button</li>
+                            <li>4️⃣ The buzzed team picks an answer (A/B/C/D)</li>
+                            <li>5️⃣ Correct = car moves forward! Wrong = engine stall!</li>
+                        </ul>
+                    </div>
+                    <div
+                        style="background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.2); border-radius:12px; padding:1rem;">
+                        <h3 style="color:var(--neon-blue); font-size:0.85rem; margin-bottom:0.5rem;">⚡ SCORING & STREAKS
+                        </h3>
+                        <ul style="list-style:none; font-size:0.85rem; color:var(--text-secondary); line-height:1.8;">
+                            <li>✅ Correct answer = <strong style="color:var(--neon-gold);">100 pts</strong></li>
+                            <li>⚡ Fast answer (&lt;5s) = <strong style="color:var(--neon-gold);">+50 bonus</strong></li>
+                            <li>🔥 3 in a row = <strong style="color:var(--neon-orange);">TURBO ×1.5</strong></li>
+                            <li>🔥🔥 5 in a row = <strong style="color:var(--neon-pink);">NITRO ×2.0!</strong></li>
+                            <li>❌ Wrong answer = streak resets, car stalls</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                    <div
+                        style="background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:12px; padding:1rem;">
+                        <h3 style="color:var(--neon-gold); font-size:0.85rem; margin-bottom:0.5rem;">🎁 POWER-UPS</h3>
+                        <ul style="list-style:none; font-size:0.85rem; color:var(--text-secondary); line-height:1.8;">
+                            <li>🚀 <strong>Turbo Boost</strong> — 2× points next correct</li>
+                            <li>❄️ <strong>Freeze</strong> — freeze the leader for 1 question</li>
+                            <li>🛡️ <strong>Shield</strong> — block one wrong penalty</li>
+                            <li>💣 <strong>Eliminator</strong> — remove 2 wrong answers</li>
+                            <li>🌀 <strong>Draft</strong> — steal 50 pts from nearest team</li>
+                        </ul>
+                    </div>
+                    <div
+                        style="background:rgba(255,46,99,0.05); border:1px solid rgba(255,46,99,0.2); border-radius:12px; padding:1rem;">
+                        <h3 style="color:var(--neon-pink); font-size:0.85rem; margin-bottom:0.5rem;">🏆 CHAMPIONSHIP
+                            ROUNDS</h3>
+                        <ul style="list-style:none; font-size:0.85rem; color:var(--text-secondary); line-height:1.8;">
+                            <li>⭐ <strong>Round 1 — Pit Stop</strong> (warm-up)</li>
+                            <li>⭐⭐ <strong>Round 2 — Street Race</strong> (harder)</li>
+                            <li>⭐⭐⭐ <strong>Round 3 — Grand Prix</strong> (advanced)</li>
+                            <li>🏁 <strong>PHOTO FINISH</strong> — top 2 teams head-to-head!</li>
+                            <li>🏆 Final podium with winner celebration!</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="text-align:center; padding:0.75rem; background:rgba(255,255,255,0.03); border-radius:8px;">
+                    <p style="font-size:0.85rem; color:var(--text-secondary);">
+                        <strong style="color:var(--neon-green);">💡 Teacher Tip:</strong>
+                        Each question has a timer. Teams earn power-ups every 4 correct answers. Use ⏸️ Pause to stop
+                        the race anytime. Hit 🏠 End to finish early.
+                    </p>
+                </div>
+            </div>
+            <!-- END INSTRUCTIONS -->
+
+            <div class="form-group">
+                <label class="form-label">Literacy Domain</label>
+                <select class="form-select" id="setup-domain">
+                    <option value="all">All Domains (Mixed)</option>
+                    <option value="reading">📖 Reading Comprehension</option>
+                    <option value="vocab">🔤 Vocabulary</option>
+                    <option value="grammar">✏️ Grammar</option>
+                    <option value="writing">📝 Writing</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Starting Level</label>
+                <select class="form-select" id="setup-level">
+                    <option value="1">⭐ Pit Stop (Grade 3-4)</option>
+                    <option value="2">⭐⭐ Street Race (Grade 5-6)</option>
+                    <option value="3">⭐⭐⭐ Grand Prix (Grade 7-8)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Timer (seconds per question)</label>
+                <select class="form-select" id="setup-timer">
+                    <option value="10">10 seconds (Fast!)</option>
+                    <option value="15" selected>15 seconds</option>
+                    <option value="20">20 seconds</option>
+                    <option value="30">30 seconds (Relaxed)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Number of Teams (2–6)</label>
+                <select class="form-select" id="setup-team-count">
+                    <option value="2">2 Teams</option>
+                    <option value="3">3 Teams</option>
+                    <option value="4" selected>4 Teams</option>
+                    <option value="5">5 Teams</option>
+                    <option value="6">6 Teams</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="team-names-container">
+                <label class="form-label">Team Names</label>
+                <!-- Dynamically generated -->
+            </div>
+
+            <div class="text-center mt-3">
+                <button class="btn btn-primary btn-lg" id="btn-start-race" onclick="startGame()">🏁 START THE
+                    RACE!</button>
+            </div>
+
+            <div class="text-center mt-2">
+                <a href="index.html" class="btn btn-secondary">← Back to Menu</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== GAME SCREEN ===== -->
+    <div id="game-screen" class="hidden" style="display:none; flex-direction:column; height:100vh;">
+
+        <!-- Header -->
+        <div class="vb-header">
+            <span class="vb-header__title">🏁 READING RUSH</span>
+            <div class="vb-header__info">
+                <span class="round-indicator" id="round-badge">Round 1</span>
+                <span id="question-count-display">Q 1/10</span>
+                <div class="timer-container" id="timer-container">
+                    <div class="timer-ring" id="timer-ring">
+                        <svg viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="0"
+                                id="timer-circle" />
+                        </svg>
+                        <span class="timer-text" id="timer-text">15</span>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;"
+                    onclick="pauseGame()">⏸️ Pause</button>
+                <button class="btn btn-danger" style="font-size:0.8rem; padding:0.4rem 0.8rem;"
+                    onclick="endGameEarly()">🏠 End</button>
+            </div>
+        </div>
+
+        <!-- Main Area -->
+        <div class="vb-main">
+
+            <!-- Center: Track + Question -->
+            <div class="vb-center">
+                <!-- Race Track -->
+                <div class="race-track" id="race-track">
+                    <!-- Dynamically generated lanes -->
+                </div>
+
+                <!-- Question -->
+                <div class="question-card" id="question-card" style="flex:1;">
+                    <div class="question-number-indicator" id="q-num-indicator"></div>
+                    <span class="question-domain-badge" id="q-domain-badge"></span>
+                    <div class="question-passage hidden" id="q-passage"></div>
+                    <div class="question-text" id="q-text"></div>
+                    <div class="answer-grid" id="answer-grid">
+                        <!-- Dynamically generated -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar: Scoreboard -->
+            <div class="scoreboard" id="scoreboard">
+                <div class="scoreboard-title">🏆 Scoreboard</div>
+                <div id="score-rows"></div>
+            </div>
+        </div>
+
+        <!-- Bottom: Buzzers -->
+        <div class="vb-bottom">
+            <div class="buzzer-panel" id="buzzer-panel">
+                <!-- Dynamically generated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ROUND END / LEADERBOARD ===== -->
+    <div id="round-end-screen" class="hidden overlay" style="display:none;">
+        <div class="modal" style="max-width:700px; text-align:center;">
+            <h2 id="round-end-title" style="margin-bottom:1rem;"></h2>
+            <div class="podium" id="round-podium"></div>
+            <div id="round-rankings" style="margin-top:1rem;"></div>
+            <div class="text-center mt-3">
+                <button class="btn btn-primary btn-lg" id="btn-next-round" onclick="nextRound()">🏁 Next Round!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PHOTO FINISH ===== -->
+    <div id="photo-finish-intro" class="hidden photo-finish-overlay" style="display:none;">
+        <div style="text-align:center;">
+            <h1 class="photo-finish-title">🏁 PHOTO FINISH 🏁</h1>
+            <p style="font-size:1.3rem; color:var(--text-secondary); margin:1rem 0;">The Championship Showdown!</p>
+            <div id="photo-finish-matchup" style="font-size:2rem; margin:2rem 0;"></div>
+            <button class="btn btn-gold btn-lg" onclick="startPhotoFinish()">🏁 LET'S RACE!</button>
+        </div>
+    </div>
+
+    <!-- ===== FINAL GAME OVER ===== -->
+    <div id="game-over-screen" class="hidden overlay" style="display:none;">
+        <div class="modal" style="max-width:700px; text-align:center;">
+            <h1 style="font-size:2.5rem; margin-bottom:0.5rem;">🏆 RACE COMPLETE! 🏆</h1>
+            <div class="podium" id="final-podium"></div>
+            <div id="final-rankings" style="margin-top:1rem;"></div>
+            <div class="text-center mt-3" style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+                <button class="btn btn-primary btn-lg" onclick="location.reload()">🔄 Race Again</button>
+                <a href="index.html" class="btn btn-secondary btn-lg">🏠 Home</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PAUSE ===== -->
+    <div id="pause-overlay" class="hidden overlay" style="display:none;">
+        <div class="modal text-center">
+            <h2>⏸️ RACE PAUSED</h2>
+            <p style="color:var(--text-secondary); margin:1rem 0;">The race is on hold. Resume when ready!</p>
+            <button class="btn btn-primary btn-lg" onclick="resumeGame()">▶️ Resume Race</button>
+        </div>
+    </div>
+
+    <!-- ===== COUNTDOWN ===== -->
+    <div id="countdown-overlay" class="hidden countdown-overlay" style="display:none;">
+        <span id="countdown-number">3</span>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toast-container" style="position:fixed; top:1rem; right:1rem; z-index:9000;"></div>
+
+    <script src="js/questions.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/sounds.js"></script>
+    <script src="js/confetti.js"></script>
+    <script src="js/viewboard.js"></script>
+</body>
+
+</html>
