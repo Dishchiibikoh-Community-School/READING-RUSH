@@ -39,7 +39,7 @@ const GameEngine = (() => {
         onGameEnd: null
     };
 
-    const CAR_EMOJIS = ['🏎️', '🚗', '🏁', '🚙', '🚕', '🛻'];
+    const CAR_EMOJIS = ['🏎️', '🚗', '🚓', '🚙', '🚕', '🛻'];
     const TEAM_COLORS = ['#39ff14', '#00f0ff', '#ff2e63', '#ffd700', '#b14eff', '#ff6f00'];
 
     /* ---------- Initialization ---------- */
